@@ -1,0 +1,16 @@
+{
+  "name": "email-agent-web",
+  "version": "1.0.0",
+  "description": "Autonomous Academic Outreach Agent for Netlify",
+  "main": "index.js",
+  "scripts": {
+    "start": "netlify dev"
+  },
+  "dependencies": {
+    "@google/genai": "^0.1.1",
+    "nodemailer": "^6.9.10"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
+  }
+}

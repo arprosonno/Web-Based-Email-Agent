@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Academic Outreach Agent | Epic Byte Studio</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Academic Outreach Agent</h2>
+    <p class="subtitle">Upload a circular image or paste text to draft and send your application with your CV attached.</p>
+
+    <form id="agentForm">
+      <div class="form-group">
+        <label for="circularText">Circular Text (Optional if image provided)</label>
+        <textarea id="circularText" rows="5" placeholder="Paste circular/opportunity details here..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="circularImage">Upload Circular Photo/Screenshot</label>
+        <input type="file" id="circularImage" accept="image/*">
+      </div>
+
+      <button type="submit" id="submitBtn">Process & Send Email</button>
+    </form>
+
+    <div id="status" class="status-box hidden"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
