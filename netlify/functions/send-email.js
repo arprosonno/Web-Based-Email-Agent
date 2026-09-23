@@ -29,9 +29,9 @@ Additional Text Input: ${text || "None provided"}`;
       });
     }
 
-    // Direct REST API Call using gemini-2.0-flash
+    // Direct REST API Call using gemini-3.6-flash
     const apiKey = process.env.GEMINI_API_KEY;
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
 
     const response = await fetch(apiUrl, {
       method: 'POST',
