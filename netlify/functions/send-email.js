@@ -11,6 +11,7 @@ exports.handler = async (event) => {
   try {
     const { text, imageBase64, mimeType } = JSON.parse(event.body);
 
+    // Initialize Gemini API Client
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
     const contents = [];
@@ -51,11 +52,15 @@ Additional Text Input: ${text || "None provided"}`
       };
     }
 
+    // Configure Nodemailer using OAuth2 authentication
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
+        type: 'OAuth2',
         user: process.env.SENDER_EMAIL,
-        pass: process.env.GMAIL_APP_PASSWORD
+        clientId: process.env.GMAIL_CLIENT_ID,
+        clientSecret: process.env.GMAIL_CLIENT_SECRET,
+        refreshToken: process.env.GMAIL_REFRESH_TOKEN,
       }
     });
 
@@ -70,7 +75,7 @@ Additional Text Input: ${text || "None provided"}`
     }
 
     await transporter.sendMail({
-      from: process.env.SENDER_EMAIL,
+      from: `Asjad Ruhullah <${process.env.SENDER_EMAIL}>`,
       to: recipient_email,
       subject: subject,
       text: body,
