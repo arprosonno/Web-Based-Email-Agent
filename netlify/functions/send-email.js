@@ -14,11 +14,12 @@ exports.handler = async (event) => {
     // Initialize Gemini Client
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ 
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.5-flash',
       generationConfig: { responseMimeType: 'application/json' }
     });
 
     const contents = [];
+
     if (imageBase64 && mimeType) {
       contents.push({
         inlineData: {
@@ -28,15 +29,15 @@ exports.handler = async (event) => {
       });
     }
 
-    contents.push({
-      text: `You are an academic outreach agent for Asjad Ruhullah (Computer Science & Engineering student at GSTU).
+    const promptText = `You are an academic outreach agent for Asjad Ruhullah (Computer Science & Engineering student at GSTU).
 Analyze the provided circular content (text/image) and return a JSON object ONLY with the following keys:
 - "recipient_email": The professor's or contact email address found in the circular.
 - "subject": A formal subject line expressing interest in the opportunity.
 - "body": A formal, well-structured cover email. Mention that "Asjad Ruhullah CV.pdf" is attached.
 
-Additional Text Input: ${text || "None provided"}`
-    });
+Additional Text Input: ${text || "None provided"}`;
+
+    contents.push(promptText);
 
     const result = await model.generateContent(contents);
     const response = await result.response;
