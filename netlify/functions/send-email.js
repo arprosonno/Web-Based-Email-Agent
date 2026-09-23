@@ -11,12 +11,11 @@ exports.handler = async (event) => {
   try {
     const { text, imageBase64, mimeType } = JSON.parse(event.body);
 
-    // Initialize Gemini Client
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     
-    // Updated model name to gemini-3.6-flash
+    // Exact standard model identifier
     const model = genAI.getGenerativeModel({ 
-      model: 'gemini-3.6-flash',
+      model: 'gemini-1.5-flash',
       generationConfig: { responseMimeType: 'application/json' }
     });
 
@@ -53,7 +52,6 @@ Additional Text Input: ${text || "None provided"}`;
       };
     }
 
-    // Configure Nodemailer using OAuth2
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
