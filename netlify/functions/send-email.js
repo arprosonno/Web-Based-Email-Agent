@@ -1,4 +1,4 @@
-const { GoogleGenAI } = require('@google/genai');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const nodemailer = require('nodemailer');
 const fs = require('fs');
 const path = require('path');
@@ -11,8 +11,12 @@ exports.handler = async (event) => {
   try {
     const { text, imageBase64, mimeType } = JSON.parse(event.body);
 
-    // Initialize Gemini API Client
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    // Initialize Gemini Client
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-1.5-flash',
+      generationConfig: { responseMimeType: 'application/json' }
+    });
 
     const contents = [];
     if (imageBase64 && mimeType) {
@@ -34,15 +38,9 @@ Analyze the provided circular content (text/image) and return a JSON object ONLY
 Additional Text Input: ${text || "None provided"}`
     });
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: contents,
-      config: {
-        responseMimeType: "application/json"
-      }
-    });
-
-    const parsedData = JSON.parse(response.text);
+    const result = await model.generateContent(contents);
+    const response = await result.response;
+    const parsedData = JSON.parse(response.text());
     const { recipient_email, subject, body } = parsedData;
 
     if (!recipient_email) {
@@ -52,7 +50,7 @@ Additional Text Input: ${text || "None provided"}`
       };
     }
 
-    // Configure Nodemailer using OAuth2 authentication
+    // Configure Nodemailer using OAuth2
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
