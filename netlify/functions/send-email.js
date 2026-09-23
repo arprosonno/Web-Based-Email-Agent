@@ -1,4 +1,3 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
 const nodemailer = require('nodemailer');
 const fs = require('fs');
 const path = require('path');
@@ -11,25 +10,6 @@ exports.handler = async (event) => {
   try {
     const { text, imageBase64, mimeType } = JSON.parse(event.body);
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    
-    // Explicit alias model string for v1beta compatibility
-    const model = genAI.getGenerativeModel({ 
-      model: 'gemini-1.5-flash-latest',
-      generationConfig: { responseMimeType: 'application/json' }
-    });
-
-    const contents = [];
-
-    if (imageBase64 && mimeType) {
-      contents.push({
-        inlineData: {
-          data: imageBase64,
-          mimeType: mimeType
-        }
-      });
-    }
-
     const promptText = `You are an academic outreach agent for Asjad Ruhullah (Computer Science & Engineering student at GSTU).
 Analyze the provided circular content (text/image) and return a JSON object ONLY with the following keys:
 - "recipient_email": The professor's or contact email address found in the circular.
@@ -38,11 +18,40 @@ Analyze the provided circular content (text/image) and return a JSON object ONLY
 
 Additional Text Input: ${text || "None provided"}`;
 
-    contents.push(promptText);
+    const parts = [{ text: promptText }];
 
-    const result = await model.generateContent(contents);
-    const response = await result.response;
-    const parsedData = JSON.parse(response.text());
+    if (imageBase64 && mimeType) {
+      parts.unshift({
+        inline_data: {
+          mime_type: mimeType,
+          data: imageBase64
+        }
+      });
+    }
+
+    // Direct REST API Call using gemini-2.0-flash
+    const apiKey = process.env.GEMINI_API_KEY;
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts }],
+        generationConfig: {
+          response_mime_type: 'application/json'
+        }
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error?.message || `API Error: ${response.statusText}`);
+    }
+
+    const rawText = data.candidates[0].content.parts[0].text;
+    const parsedData = JSON.parse(rawText);
     const { recipient_email, subject, body } = parsedData;
 
     if (!recipient_email) {
@@ -52,6 +61,7 @@ Additional Text Input: ${text || "None provided"}`;
       };
     }
 
+    // Nodemailer OAuth2 Setup
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
